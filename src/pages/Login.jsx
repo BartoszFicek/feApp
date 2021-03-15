@@ -4,15 +4,19 @@ import { Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import styled from "styled-components";
 import image from "../assets/login-page-image.svg";
+import shape2 from "../assets/shape2.png";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import IconButton from "@material-ui/core/IconButton";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
+import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import * as API from "../api/auth";
 import * as AuthService from "../utils/authService";
+import { useFormik } from "formik";
+import * as yup from "yup";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -24,53 +28,85 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const validationSchema = yup.object({
+  login: yup
+    .string("Enter your email")
+    .email("Enter a valid email")
+    .required("Email is required"),
+  password: yup
+    .string("Enter your password")
+    .min(8, "Password should be of minimum 8 characters length")
+    .matches(/[a-z]/, "At least one lowercase char required")
+    .matches(/[A-Z]/, "At least one uppercase char required")
+    .matches(
+      /[a-zA-Z]+[^a-zA-Z\s]+/,
+      "At least one special char required (@,!,#, etc)."
+    )
+    .required("Password is required"),
+});
+
 export const Login = () => {
   const classes = useStyles();
-  const [loginValue, setLoginValue] = useState("");
-  const [passwordValue, setPasswordValue] = useState("");
   const [showPassword, onShowPassword] = useState(false);
-  const [loginError, onLoginError] = useState(false);
-  const [passwordError, onPasswordError] = useState(false);
 
   let history = useHistory();
 
+  const formik = useFormik({
+    initialValues: {
+      login: "",
+      password: "",
+    },
+    validationSchema: validationSchema,
+    onSubmit: (values) => {
+      API.userSignIn(values)
+        .then((res) => {
+          AuthService.login("token");
+        })
+        .catch((e) => {
+          AuthService.login("errorToken");
+          history.push("/");
+        });
+    },
+  });
+
   return (
     <Wrapper>
+      <RightBottomCornerShape src={shape2} />
       <LeftContainer>
         <Title>FeApp</Title>
         <Image src={image} />
       </LeftContainer>
       <MainContainer>
-        <FormWrapper>
+        <FormWrapper onSubmit={formik.handleSubmit}>
           <Text> Sign in to FeApp </Text>
           <SecondaryText> Enter your credentials below </SecondaryText>
-          <FormControl variant="outlined" error={loginError}>
-            <InputLabel htmlFor="outlined-adornment-password">Login</InputLabel>
-            <OutlinedInput
-              className={classes.margin}
-              id="outlined-adornment-password"
-              value={loginValue}
-              onChange={(event) => {
-                const newValue = event.target.value;
-                setLoginValue(newValue);
-              }}
-              labelWidth={45}
-            />
-          </FormControl>
-          <FormControl variant="outlined" error={passwordError}>
-            <InputLabel htmlFor="outlined-adornment-password">
-              Password
-            </InputLabel>
-            <OutlinedInput
-              className={classes.margin}
-              id="outlined-adornment-password"
-              type={showPassword ? "text" : "password"}
-              value={passwordValue}
-              onChange={(event) => {
-                const newValue = event.target.value;
-                setPasswordValue(newValue);
-              }}
-              endAdornment={
+          <TextField
+            id="login"
+            name="login"
+            className={classes.margin}
+            value={formik.values.login}
+            onChange={formik.handleChange}
+            labelWidth={45}
+            label={"Login"}
+            variant="outlined"
+            type={"text"}
+            error={formik.touched.login && Boolean(formik.errors.login)}
+            helperText={formik.touched.login && formik.errors.login}
+          />
+          <TextField
+            id="password"
+            name="password"
+            className={classes.margin}
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            labelWidth={75}
+            label={"Password"}
+            variant="outlined"
+            type={showPassword ? "text" : "password"}
+            error={formik.touched.password && Boolean(formik.errors.password)}
+            helperText={formik.touched.password && formik.errors.password}
+            InputProps={{
+              endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
                     onClick={() => onShowPassword(!showPassword)}
@@ -79,34 +115,20 @@ export const Login = () => {
                     {showPassword ? <Visibility /> : <VisibilityOff />}
                   </IconButton>
                 </InputAdornment>
-              }
-              labelWidth={75}
-            />
-          </FormControl>
-
+              ),
+            }}
+          />
           <Button
             variant="contained"
             className={classes.button}
             color="primary"
             disabled={
-              loginValue.length === 0 ||
-              passwordValue.length === 0 ||
-              loginError ||
-              passwordError
+              formik.values.login.length === 0 ||
+              formik.values.password.length === 0 ||
+              (formik.touched.login && Boolean(formik.errors.login)) ||
+              (formik.touched.password && Boolean(formik.errors.password))
             }
-            onClick={() => {
-              API.userSignIn({
-                login: loginValue,
-                password: passwordValue,
-              })
-                .then((res) => {
-                  AuthService.login("token");
-                })
-                .catch((e) => {
-                  AuthService.login("errorToken");
-                  history.push("/");
-                });
-            }}
+            type="submit"
           >
             Sign in
           </Button>
@@ -122,8 +144,17 @@ const Wrapper = styled.div`
   height: 100%;
 `;
 
+const RightBottomCornerShape = styled.img`
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  opacity: 0.6;
+`;
+
 const LeftContainer = styled.div`
   min-width: 200px;
+  z-index: 5;
   width: 35%;
   padding: 0px 40px 0px 40px;
   display: flex;
@@ -139,6 +170,7 @@ const MainContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 5;
   width: 100%;
 `;
 
@@ -152,7 +184,7 @@ const Image = styled.img`
   width: 100%;
 `;
 
-const FormWrapper = styled.div`
+const FormWrapper = styled.form`
   display: flex;
   flex-direction: column;
   border-radius: 15px;
@@ -160,6 +192,7 @@ const FormWrapper = styled.div`
   padding: 20px;
   width: 70%;
   max-width: 700px;
+  background: #fff;
 `;
 
 const Text = styled.span`
