@@ -14,6 +14,7 @@ import * as API from "../api/auth";
 import * as AuthService from "../utils/authService";
 import { useFormik } from "formik";
 import * as yup from "yup";
+import FormHelperText from "@material-ui/core/FormHelperText";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -45,6 +46,7 @@ const validationSchema = yup.object({
 export const Login = () => {
   const classes = useStyles();
   const [showPassword, onShowPassword] = useState(false);
+  const [authError, setAuthError] = useState(null);
 
   let history = useHistory();
 
@@ -57,11 +59,11 @@ export const Login = () => {
     onSubmit: (values) => {
       API.userSignIn(values)
         .then((res) => {
-          AuthService.login("token");
+          AuthService.login(res.data.userId);
+          history.push("/");
         })
         .catch((e) => {
-          AuthService.login("errorToken");
-          history.push("/");
+          setAuthError(e.response.data.errorMessage);
         });
     },
   });
@@ -82,7 +84,12 @@ export const Login = () => {
             name="login"
             className={classes.margin}
             value={formik.values.login}
-            onChange={formik.handleChange}
+            onChange={(val) => {
+              {
+                authError && setAuthError(null);
+              }
+              formik.handleChange(val);
+            }}
             labelWidth={45}
             label={"Login"}
             variant="outlined"
@@ -95,7 +102,12 @@ export const Login = () => {
             name="password"
             className={classes.margin}
             value={formik.values.password}
-            onChange={formik.handleChange}
+            onChange={(val) => {
+              {
+                authError && setAuthError(null);
+              }
+              formik.handleChange(val);
+            }}
             labelWidth={75}
             label={"Password"}
             variant="outlined"
@@ -115,11 +127,14 @@ export const Login = () => {
               ),
             }}
           />
+          {authError && <FormHelperText error>{authError}</FormHelperText>}
+
           <Button
             variant="contained"
             className={classes.button}
             color="primary"
             disabled={
+              authError ||
               formik.values.login.length === 0 ||
               formik.values.password.length === 0 ||
               (formik.touched.login && Boolean(formik.errors.login)) ||

@@ -55,7 +55,7 @@ export const Home = () => {
         setData(data);
         setDataLoading(false);
       })
-      .catch((e) => console.log("error"));
+      .catch((e) => console.log(e));
   }, []);
 
   return (
@@ -89,18 +89,25 @@ export const Home = () => {
           data.groups.map((group) => (
             <>
               <Row key={group.id}>
-                <SectionTitle>{group.title}</SectionTitle>
+                <Col xs={12}>
+                  <SectionTitle>{group.title}</SectionTitle>
+                </Col>
               </Row>
               <Row>
                 {group.elements.map((element) => (
                   <Col
                     xs={12}
                     sm={6}
-                    md={6}
+                    md={4}
                     lg={3}
                     className={classes.groupElement}
                   >
-                    <GroupElement element={element} windowSize={windowSize} />
+                    <GroupElement
+                      element={element}
+                      windowSize={windowSize}
+                      groupTitle={group.title}
+                      appName={data.appName}
+                    />
                   </Col>
                 ))}
               </Row>
@@ -114,12 +121,12 @@ export const Home = () => {
 
 const Wrapper = styled.div`
   display: flex;
-  margin-top: 100px;
-  padding-bottom: 50px;
+  margin-top: 80px;
 `;
 
-const SectionTitle = styled.span`
+const SectionTitle = styled.div`
   font-size: 26px;
   font-weight: 500;
+  margin-top: 20px;
   margin-bottom: 20px;
 `;
