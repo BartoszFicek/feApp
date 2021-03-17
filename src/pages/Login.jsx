@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { useHistory } from "react-router-dom";
-import { Button } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
-import styled from "styled-components";
-import image from "../assets/login-page-image.svg";
-import shape2 from "../assets/shape2.png";
-import IconButton from "@material-ui/core/IconButton";
-import TextField from "@material-ui/core/TextField";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import Visibility from "@material-ui/icons/Visibility";
-import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import * as API from "../api/auth";
-import * as AuthService from "../utils/authService";
 import { useFormik } from "formik";
+import { useSnackbar } from "notistack";
+import styled from "styled-components";
 import * as yup from "yup";
 import FormHelperText from "@material-ui/core/FormHelperText";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import Visibility from "@material-ui/icons/Visibility";
+import { makeStyles } from "@material-ui/core/styles";
+import IconButton from "@material-ui/core/IconButton";
+import TextField from "@material-ui/core/TextField";
+import { Button } from "@material-ui/core";
+import * as AuthService from "../utils/authService";
+import image from "../assets/login-page-image.svg";
+import shape2 from "../assets/shape2.png";
+import * as API from "../api/auth";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -48,6 +49,7 @@ export const Login = () => {
   const [showPassword, onShowPassword] = useState(false);
   const [authError, setAuthError] = useState(null);
 
+  const { enqueueSnackbar } = useSnackbar();
   let history = useHistory();
 
   const formik = useFormik({
@@ -61,8 +63,14 @@ export const Login = () => {
         .then((res) => {
           AuthService.login(res.data.userId);
           history.push("/");
+          enqueueSnackbar(`Welcome back ${res.data.userName}`, {
+            variant: "success",
+          });
         })
         .catch((e) => {
+          enqueueSnackbar("Something went wrong. Try again", {
+            variant: "error",
+          });
           setAuthError(e.response.data.errorMessage);
         });
     },
@@ -85,9 +93,7 @@ export const Login = () => {
             className={classes.margin}
             value={formik.values.login}
             onChange={(val) => {
-              {
-                authError && setAuthError(null);
-              }
+              if (authError) setAuthError(null);
               formik.handleChange(val);
             }}
             labelWidth={45}
@@ -103,9 +109,7 @@ export const Login = () => {
             className={classes.margin}
             value={formik.values.password}
             onChange={(val) => {
-              {
-                authError && setAuthError(null);
-              }
+              if (authError) setAuthError(null);
               formik.handleChange(val);
             }}
             labelWidth={75}

@@ -1,41 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory } from "react-router-dom";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
+import { useSnackbar } from "notistack";
+import { Grid, Col, Row } from "react-flexbox-grid";
+import styled from "styled-components";
+import ExitToAppRoundedIcon from "@material-ui/icons/ExitToAppRounded";
+import LinearProgress from "@material-ui/core/LinearProgress";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
-import ExitToAppRoundedIcon from "@material-ui/icons/ExitToAppRounded";
-import styled from "styled-components";
-import { Grid, Col, Row } from "react-flexbox-grid";
-import * as AuthService from "../utils/authService";
-import * as API_DATA from "../api/groups";
-import { useEffect } from "react";
-import LinearProgress from "@material-ui/core/LinearProgress";
-import { red } from "@material-ui/core/colors";
+import Toolbar from "@material-ui/core/Toolbar";
+import AppBar from "@material-ui/core/AppBar";
 import GroupElement from "../components/GroupElement";
+import * as AuthService from "../utils/authService";
 import useWindowSize from "../utils/useWindowSize";
+import * as API_DATA from "../api/groups";
 
 const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
-  },
-  media: {
-    height: 0,
-    paddingTop: "56.25%", // 16:9
-  },
-  expand: {
-    transform: "rotate(0deg)",
-    marginLeft: "auto",
-    transition: theme.transitions.create("transform", {
-      duration: theme.transitions.duration.shortest,
-    }),
-  },
-  expandOpen: {
-    transform: "rotate(180deg)",
-  },
-  avatar: {
-    backgroundColor: red[500],
   },
   groupElement: {
     marginBottom: "20px",
@@ -48,6 +30,7 @@ export const Home = () => {
   const [dataLoading, setDataLoading] = useState(true);
   const history = useHistory();
   const windowSize = useWindowSize();
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     API_DATA.getGroupsData()
@@ -55,7 +38,11 @@ export const Home = () => {
         setData(data);
         setDataLoading(false);
       })
-      .catch((e) => console.log(e));
+      .catch((e) =>
+        enqueueSnackbar("Get data error. Reload page", {
+          variant: "error",
+        })
+      );
   }, []);
 
   return (
@@ -79,7 +66,6 @@ export const Home = () => {
           </IconButton>
         </Toolbar>
       </AppBar>
-
       <Grid>
         {dataLoading ? (
           <LinearProgress />
@@ -87,7 +73,7 @@ export const Home = () => {
           data &&
           data.groups &&
           data.groups.map((group) => (
-            <>
+            <div key={group.id}>
               <Row key={group.id}>
                 <Col xs={12}>
                   <SectionTitle>{group.title}</SectionTitle>
@@ -101,6 +87,7 @@ export const Home = () => {
                     md={4}
                     lg={3}
                     className={classes.groupElement}
+                    key={element.id}
                   >
                     <GroupElement
                       element={element}
@@ -111,7 +98,7 @@ export const Home = () => {
                   </Col>
                 ))}
               </Row>
-            </>
+            </div>
           ))
         )}
       </Grid>

@@ -1,20 +1,13 @@
 import { useState } from "react";
+import styled from "styled-components";
+import CardContent from "@material-ui/core/CardContent";
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import styled from "styled-components";
 import clsx from "clsx";
-import CardContent from "@material-ui/core/CardContent";
 
 const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
-  },
-  media: {
-    height: 0,
-    paddingTop: "56.25%", // 16:9
-  },
-  expandOpen: {
-    transform: "rotate(180deg)",
   },
   groupElement: {
     marginBottom: "20px",
@@ -24,10 +17,16 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: "nowrap",
     overflow: "hidden",
     maxWidth: "calc(100vw - 70px)",
+    "&:hover": {
+      cursor: "pointer",
+    },
   },
   longText: {
     whiteSpace: "normal",
     overflow: "hidden",
+    "&:hover": {
+      cursor: "pointer",
+    },
   },
   photo: {
     width: "100%",
@@ -56,7 +55,6 @@ const GroupElement = ({ element, windowSize, groupTitle, appName }) => {
             className={classes.photo}
           />
         )}
-
         <CardContent>
           <Typography
             variant="body1"
@@ -87,6 +85,7 @@ const GroupElement = ({ element, windowSize, groupTitle, appName }) => {
 };
 
 export default GroupElement;
+
 const Content = styled.div`
   position: relative;
   z-index: 2000;
