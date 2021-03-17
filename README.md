@@ -3,6 +3,6 @@
 ###### In order to run the backend app please execute the following commands
 
 ```
-yarn install
+yarn
 yarn start
 ```
