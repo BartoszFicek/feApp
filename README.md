@@ -1,6 +1,6 @@
 ## To run app
 
-###### In order to run the backend app please execute the following commands
+###### In order to run the app please execute the following commands
 
 ```
 yarn
